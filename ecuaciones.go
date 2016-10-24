@@ -14,52 +14,6 @@ type Arbol struct {
 	Derecha *Arbol
 }
 
-func Operaciones(t *Arbol) int {
-	if t == nil {
-		return 0
-	}
-	switch t.Valor {
-		case "+":
-			return Operaciones(t.Izquierda) + Operaciones(t.Derecha)
-		case "-":
-			return Operaciones(t.Izquierda) - Operaciones(t.Derecha)
-		case "*":
-			return Operaciones(t.Izquierda) * Operaciones(t.Derecha)
-		case "/":
-			return Operaciones(t.Izquierda) / Operaciones(t.Derecha)
-		default:
-			numero,_ := strconv.Atoi(t.Valor)
-			return numero
-	}
-	return 0
-}
-
-func sintaxis(t * Arbol) int{
-	if t != nil{
-		_,er := strconv.Atoi(t.Valor)
-		if t.Izquierda == nil && t.Derecha == nil{
-			if er != nil {
-				fmt.Println("Se esperaba un numero en lugar de ",t.Valor)
-				return sintaxis(t.Izquierda) + sintaxis(t.Derecha) + 1
-			}
-			return sintaxis(t.Izquierda) + sintaxis(t.Derecha)
-		}	else if t.Izquierda != nil && t.Derecha != nil {
-			if er != nil{
-				if t.Valor=="*"||t.Valor=="/"||t.Valor=="+"||t.Valor=="-"{
-					return sintaxis(t.Izquierda) + sintaxis(t.Derecha)
-				} else {
-					fmt.Println("Se esperaba un signo en lugar de ",t.Valor)
-					return sintaxis(t.Izquierda) + sintaxis(t.Derecha) +1
-				}
-			} else {
-					fmt.Println("Se esperaba un signo en lugar de un numero, en ",t.Valor)
-					return sintaxis(t.Izquierda) + sintaxis(t.Derecha) + 1
-			}
-		}
-	}
-	return 0
-}
-
 type NodeA struct {
 	variable string
 	arbol *Arbol
@@ -144,6 +98,52 @@ func (q *Queue) Pop() *Node {
 	return node
 }
 
+func Operaciones(t *Arbol) int {
+	if t == nil {
+		return 0
+	}
+	switch t.Valor {
+		case "+":
+			return Operaciones(t.Izquierda) + Operaciones(t.Derecha)
+		case "-":
+			return Operaciones(t.Izquierda) - Operaciones(t.Derecha)
+		case "*":
+			return Operaciones(t.Izquierda) * Operaciones(t.Derecha)
+		case "/":
+			return Operaciones(t.Izquierda) / Operaciones(t.Derecha)
+		default:
+			numero,_ := strconv.Atoi(t.Valor)
+			return numero
+	}
+	return 0
+}
+
+func sintaxis(t * Arbol) int{
+	if t != nil{
+		_,er := strconv.Atoi(t.Valor)
+		if t.Izquierda == nil && t.Derecha == nil{
+			if er != nil {
+				fmt.Println("Se esperaba un numero en lugar de ",t.Valor)
+				return sintaxis(t.Izquierda) + sintaxis(t.Derecha) + 1
+			}
+			return sintaxis(t.Izquierda) + sintaxis(t.Derecha)
+		}	else if t.Izquierda != nil && t.Derecha != nil {
+			if er != nil{
+				if t.Valor=="*"||t.Valor=="/"||t.Valor=="+"||t.Valor=="-"{
+					return sintaxis(t.Izquierda) + sintaxis(t.Derecha)
+				} else {
+					fmt.Println("Se esperaba un signo en lugar de ",t.Valor)
+					return sintaxis(t.Izquierda) + sintaxis(t.Derecha) +1
+				}
+			} else {
+					fmt.Println("Se esperaba un signo en lugar de un numero, en ",t.Valor)
+					return sintaxis(t.Izquierda) + sintaxis(t.Derecha) + 1
+			}
+		}
+	}
+	return 0
+}
+
 func evaluarEcuacion(terminos [] string, variable string, arboles *Stack)  int {
 	s := NewStack()
   for i := 0; i < len(terminos); i++ {
@@ -157,22 +157,17 @@ func evaluarEcuacion(terminos [] string, variable string, arboles *Stack)  int {
           s.Push(&NodeA{variable, &Arbol{b.arbol,terminos[i],a.arbol}, "0"})
       }
     } else {
-			if len(arboles.nodes) != 0 {
-				for j := 0; j < len(arboles.nodes); j++ {
-						if (terminos[i] == arboles.nodes[j].variable){
-							fmt.Println("aca")
-							s.Push(&NodeA{variable, &Arbol{nil,arboles.nodes[j].valor,nil},"0"})
-						} else {
-							fmt.Println("aca2")
-							s.Push(&NodeA{variable, &Arbol{nil,terminos[i],nil},"0"})
-						}
-				}
-			} else {
-				fmt.Println("aca3")
+			cambiovariable := false
+			for j := 0; j < len(arboles.nodes); j++ {
+					if (terminos[i] == arboles.nodes[j].variable){
+						s.Push(&NodeA{variable, &Arbol{nil,arboles.nodes[j].valor,nil},"0"})
+						cambiovariable = true
+					}
+			}
+			if cambiovariable == false{
 				s.Push(&NodeA{variable, &Arbol{nil,terminos[i],nil},"0"})
 			}
-			//s.Push(&NodeA{variable, &Arbol{nil,terminos[i],nil},"0"})
-    }
+		}
   }
 	arbolfinal := s.Pop()
 	arboles.Push(arbolfinal)
@@ -190,7 +185,7 @@ func main() {
 			break
 		} else {
 			terminos := strings.Split(ecuacion," ")
-			ecuaciones.Push(&Node{terminos[len(terminos)-1],append(terminos[:len(terminos)-1])})
+			ecuaciones.Push(&Node{terminos[len(terminos)-1], append(terminos[:len(terminos)-1])})
 		}
 	}
 
@@ -207,9 +202,5 @@ func main() {
 	  		arboles.Push(&NodeA{t2.variable, arbolt2, valors})
 	  	}
 	  }
-	}
-	//fmt.Println(len(arboles.nodes))
-	for i := 0; i < len(arboles.nodes); i++ {
-			fmt.Println(arboles.nodes[i].variable, arboles.nodes[i].arbol, arboles.nodes[i].valor)
 	}
 }
