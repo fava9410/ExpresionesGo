@@ -185,7 +185,11 @@ func main() {
 			break
 		} else {
 			terminos := strings.Split(ecuacion," ")
-			ecuaciones.Push(&Node{terminos[len(terminos)-1], append(terminos[:len(terminos)-1])})
+			if terminos[len(terminos)-1] != ":="{
+				fmt.Println("Error de asignacion, verifique que ingreso ':=' e intente de nuevo")
+			} else {
+				ecuaciones.Push(&Node{terminos[len(terminos)-2], append(terminos[:len(terminos)-2])})
+			}
 		}
 	}
 
